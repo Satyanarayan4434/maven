@@ -2,7 +2,7 @@ node('master')
 {
   stage('ContinuousDownload') 
   {
-    git 'https://github.com/selenium-saikrishna/maven.git'
+    git 'https://github.com/sunildevops77/maven.git'
   } 
   stage('ContinuousBuild') 
   {
@@ -10,24 +10,16 @@ node('master')
   } 
   stage('ContinuousDeployment') 
   {
-    sh 'scp /var/lib/jenkins/workspace/Pipeline/webapp/target/webapp.war vagrant@10.10.10.32:/var/lib/tomcat7/webapps/qaenv.war'
+    sh "scp ${env.WORKSPACE}/webapp/target/webapp.war ${env.QA_USER}@${env.QA_HOST}:${env.QA_DEPLOY_PATH}"
   }
   stage('ContinuousTesting') 
   {
-    git 'https://github.com/selenium-saikrishna/TestingOnLinux.git'
-    sh 'java -jar  /var/lib/jenkins/workspace/Pipeline/testing.jar'
+    git 'https://github.com/sunildevops77/maven.git'
+    sh "java -jar ${env.WORKSPACE}/testing.jar"
   }
   stage('ContinuousDelivery') 
   {
-      input message: 'Waiting for approval from DM', submitter: 'Srinivas'
-    sh 'scp /var/lib/jenkins/workspace/Pipeline/webapp/target/webapp.war vagrant@10.10.10.33:/var/lib/tomcat7/webapps/prodenv.war'
+    input message: 'Waiting for approval from DM', submitter: 'Srinivas'
+    sh "scp ${env.WORKSPACE}/webapp/target/webapp.war ${env.PROD_USER}@${env.PROD_HOST}:${env.PROD_DEPLOY_PATH}"
   }
-  
-  
-  
-  
-  
-  
-  
-  
 }

@@ -1,13 +1,21 @@
 pipeline
 {
     agent any
+    environment
+    {
+        QA_USER     = 'ubuntu'
+        QA_HOST     = credentials('qa-host')
+        PROD_USER   = 'ubuntu'
+        PROD_HOST   = credentials('prod-host')
+        DEPLOY_PATH = '/var/lib/tomcat8/webapps'
+    }
     stages
     {
         stage('ContDownload')
         {
             steps
             {
-                git 'https://github.com/selenium-saikrishna/maven.git'
+                git 'https://github.com/sunildevops77/maven.git'
             }
         }
         stage('ContBuild')
@@ -21,15 +29,15 @@ pipeline
         {
             steps
             {
-                sh 'scp /var/lib/jenkins/workspace/Declarative_Pipeline/webapp/target/webapp.war vagrant@10.10.10.32:/var/lib/tomcat7/webapps/qaenv.war'
+                sh "scp ${env.WORKSPACE}/webapp/target/webapp.war ${QA_USER}@${QA_HOST}:${DEPLOY_PATH}/qaenv.war"
             }
         }
         stage('ContTesting')
         {
             steps
             {
-                git 'https://github.com/selenium-saikrishna/TestingOnLinux.git'
-                sh 'java -jar  /var/lib/jenkins/workspace/Declarative_Pipeline/testing.jar'
+                git 'https://github.com/sunildevops77/maven.git'
+                sh "java -jar ${env.WORKSPACE}/testing.jar"
             }
         }
     }
@@ -38,15 +46,11 @@ pipeline
         success
         {
             input message: 'Waiting for approval from DM', submitter: 'Srinivas'
-    sh 'scp /var/lib/jenkins/workspace/Declarative_Pipeline/webapp/target/webapp.war vagrant@10.10.10.33:/var/lib/tomcat7/webapps/prodenv.war'
+            sh "scp ${env.WORKSPACE}/webapp/target/webapp.war ${PROD_USER}@${PROD_HOST}:${DEPLOY_PATH}/prodenv.war"
         }
         failure
         {
-            mail bcc: '', body: '', cc: '', from: '', replyTo: '', subject: 'Build failed', to: 'gandham.saikrishna@gmail.com'
-            
+            mail bcc: '', body: 'Build has failed. Please check Jenkins for details.', cc: '', from: '', replyTo: '', subject: 'Build failed', to: 'gandham.saikrishna@gmail.com'
         }
-        
-     }
-      
-    
+    }
 }
